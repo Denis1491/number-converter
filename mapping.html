@@ -108,6 +108,74 @@
       justify-content: flex-end;
     }
 
+    .iching-panel {
+      display: grid;
+      gap: 12px;
+      width: min(920px, calc(100% - 48px));
+      margin: 18px auto 0;
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+
+    .iching-panel[hidden] {
+      display: none !important;
+    }
+
+    .iching-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .iching-header h2 {
+      margin: 0;
+      font-size: 16px;
+      line-height: 1.35;
+    }
+
+    .iching-grid {
+      display: grid;
+      gap: 8px;
+    }
+
+    .iching-row {
+      display: grid;
+      grid-template-columns: 72px minmax(0, 1fr);
+      gap: 10px;
+      align-items: center;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #fbfcfc;
+    }
+
+    .iching-row strong {
+      color: var(--primary-deep);
+      font-size: 14px;
+      line-height: 1.35;
+    }
+
+    .iching-number-grid {
+      display: grid;
+      grid-template-columns: repeat(8, minmax(0, 1fr));
+      gap: 6px;
+    }
+
+    .iching-number-grid span {
+      display: grid;
+      place-items: center;
+      min-height: 30px;
+      border-radius: 6px;
+      background: var(--soft);
+      color: var(--ink);
+      font-weight: 900;
+      font-variant-numeric: tabular-nums;
+    }
+
     .layout {
       display: grid;
       grid-template-columns: 340px minmax(0, 1fr) 380px;
@@ -617,6 +685,26 @@
         justify-content: flex-start;
       }
 
+      .iching-panel {
+        width: calc(100% - 20px);
+        margin-top: 10px;
+        padding: 12px;
+      }
+
+      .iching-header {
+        align-items: flex-start;
+      }
+
+      .iching-row {
+        grid-template-columns: 54px minmax(0, 1fr);
+        gap: 8px;
+        padding: 8px;
+      }
+
+      .iching-number-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
       .layout {
         padding: 10px;
       }
@@ -715,8 +803,17 @@
         <a class="btn" data-page-link="mapping" href="mapping.html">對照表</a>
         <a class="btn" data-page-link="quiz" href="quiz.html">自我測驗</a>
         <a class="btn btn-primary" data-page-link="test" href="test.html">限時測試</a>
+        <button class="btn" id="ichingToggleBtn" type="button" aria-controls="ichingPanel" aria-expanded="false">易經表</button>
       </div>
     </header>
+
+    <section class="iching-panel" id="ichingPanel" aria-label="數字易經對照表" hidden>
+      <div class="iching-header">
+        <h2>數字易經對照表</h2>
+        <button class="btn" id="ichingCloseBtn" type="button">關閉</button>
+      </div>
+      <div class="iching-grid" id="ichingTable"></div>
+    </section>
 
     <main class="layout">
       <section class="stack">
@@ -959,6 +1056,17 @@
       "99": "領結 👔"
     };
 
+    const ichingRows = [
+      { name: "天醫", numbers: ["13", "27", "49", "68", "31", "72", "94", "86"] },
+      { name: "生氣", numbers: ["14", "28", "39", "67", "76", "93", "82", "41"] },
+      { name: "延年", numbers: ["19", "26", "34", "78", "87", "43", "62", "91"] },
+      { name: "伏位", numbers: ["11", "22", "33", "44", "66", "77", "88", "99"] },
+      { name: "五鬼", numbers: ["18", "24", "36", "79", "97", "63", "42", "81"] },
+      { name: "絕命", numbers: ["12", "37", "48", "69", "96", "84", "73", "21"] },
+      { name: "禍害", numbers: ["17", "23", "46", "89", "98", "64", "32", "71"] },
+      { name: "六煞", numbers: ["16", "29", "38", "47", "74", "83", "92", "61"] }
+    ];
+
     const state = {
       customMap: loadCustomMap(),
       selectedPair: "19",
@@ -996,6 +1104,10 @@
     const scoreGrid = $("#scoreGrid");
     const compareResult = $("#compareResult");
     const layout = $(".layout");
+    const ichingToggleBtn = $("#ichingToggleBtn");
+    const ichingCloseBtn = $("#ichingCloseBtn");
+    const ichingPanel = $("#ichingPanel");
+    const ichingTable = $("#ichingTable");
 
     const pages = {
       converter: {
@@ -1060,6 +1172,26 @@
         .replaceAll(">", "&gt;")
         .replaceAll('"', "&quot;")
         .replaceAll("'", "&#039;");
+    }
+
+    function renderIChingTable() {
+      ichingTable.innerHTML = ichingRows.map((row) => `
+        <article class="iching-row">
+          <strong>${escapeHtml(row.name)}</strong>
+          <div class="iching-number-grid">
+            ${row.numbers.map((number) => `<span>${number}</span>`).join("")}
+          </div>
+        </article>
+      `).join("");
+    }
+
+    function setIChingPanelOpen(isOpen) {
+      ichingPanel.hidden = !isOpen;
+      ichingToggleBtn.setAttribute("aria-expanded", String(isOpen));
+      ichingToggleBtn.textContent = isOpen ? "關閉易經表" : "易經表";
+      if (isOpen) {
+        ichingPanel.scrollIntoView({ block: "nearest", behavior: "smooth" });
+      }
     }
 
     function loadCustomMap() {
@@ -1403,6 +1535,15 @@
     }
 
     setupPageLayout();
+    renderIChingTable();
+    setIChingPanelOpen(false);
+
+    ichingToggleBtn.addEventListener("click", () => {
+      setIChingPanelOpen(ichingPanel.hidden);
+    });
+    ichingCloseBtn.addEventListener("click", () => {
+      setIChingPanelOpen(false);
+    });
 
     $("#convertBtn").addEventListener("click", () => renderConversion());
     numberInput.addEventListener("input", () => renderConversion());
