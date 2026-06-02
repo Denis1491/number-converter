@@ -1,0 +1,1521 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>數字轉換練習器</title>
+  <style>
+    :root {
+      --bg: #f5f7f6;
+      --surface: #ffffff;
+      --soft: #eef5f1;
+      --note: #fff8db;
+      --warm: #fff0ec;
+      --ink: #17201c;
+      --muted: #687770;
+      --line: #d9e2de;
+      --line-strong: #b8c9c1;
+      --primary: #167c68;
+      --primary-deep: #0f5f51;
+      --accent: #d65f45;
+      --danger: #ba3c3c;
+      --ok: #3e7b4f;
+      --shadow: 0 10px 28px rgba(31, 44, 38, 0.08);
+      --radius: 8px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: Inter, "Noto Sans TC", "Microsoft JhengHei", system-ui, sans-serif;
+      letter-spacing: 0;
+    }
+
+    button,
+    input,
+    textarea,
+    select {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    .app {
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: auto 1fr;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      min-height: 68px;
+      padding: 14px 24px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(245, 247, 246, 0.94);
+      backdrop-filter: blur(10px);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .brand-mark {
+      display: grid;
+      place-items: center;
+      flex: 0 0 38px;
+      width: 38px;
+      height: 38px;
+      border-radius: var(--radius);
+      color: #fff;
+      background: var(--primary);
+      font-weight: 900;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 20px;
+      line-height: 1.25;
+    }
+
+    .brand p {
+      margin: 2px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .top-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 340px minmax(0, 1fr) 380px;
+      gap: 18px;
+      padding: 18px 24px 28px;
+      align-items: start;
+    }
+
+    .layout.is-single-page {
+      max-width: 920px;
+      margin: 0 auto;
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .layout.is-single-page .map-table {
+      max-height: none;
+      overflow: visible;
+      padding-right: 0;
+    }
+
+    .is-page-hidden {
+      display: none !important;
+    }
+
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      min-height: 56px;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .panel-title h2 {
+      margin: 0;
+      font-size: 16px;
+      line-height: 1.35;
+    }
+
+    .panel-title span {
+      display: block;
+      margin-top: 2px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .panel-body {
+      display: grid;
+      gap: 14px;
+      padding: 16px;
+    }
+
+    .stack {
+      display: grid;
+      gap: 14px;
+    }
+
+    .input,
+    .textarea,
+    .select {
+      width: 100%;
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius);
+      color: var(--ink);
+      background: #fff;
+      outline: none;
+    }
+
+    .input,
+    .select {
+      min-height: 40px;
+      padding: 0 12px;
+    }
+
+    .textarea {
+      min-height: 112px;
+      resize: vertical;
+      padding: 12px;
+      line-height: 1.6;
+    }
+
+    .textarea.is-concealed {
+      min-height: 72px;
+      color: var(--muted);
+      background: #eef5f2;
+      font-weight: 800;
+      resize: none;
+    }
+
+    .textarea.is-concealed::placeholder {
+      color: var(--primary-deep);
+      opacity: 1;
+    }
+
+    .input:focus,
+    .textarea:focus,
+    .select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(22, 124, 104, 0.12);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 38px;
+      padding: 0 13px;
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius);
+      color: var(--ink);
+      background: #fff;
+      font-weight: 800;
+      text-decoration: none;
+      cursor: pointer;
+      transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+    }
+
+    .btn:hover {
+      border-color: var(--primary);
+      color: var(--primary-deep);
+    }
+
+    .btn:active {
+      transform: translateY(1px);
+    }
+
+    .btn-primary {
+      border-color: var(--primary);
+      color: #fff;
+      background: var(--primary);
+    }
+
+    .btn-primary:hover {
+      color: #fff;
+      background: var(--primary-deep);
+    }
+
+    .btn-danger {
+      border-color: rgba(186, 60, 60, 0.35);
+      color: var(--danger);
+      background: #fff8f8;
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .segmented {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(72px, 1fr));
+      gap: 8px;
+    }
+
+    .segmented button {
+      min-height: 36px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #fff;
+      color: var(--muted);
+      font-weight: 800;
+    }
+
+    .segmented button.is-active {
+      border-color: var(--primary);
+      color: #fff;
+      background: var(--primary);
+    }
+
+    .hint {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .converter-output {
+      display: grid;
+      gap: 10px;
+    }
+
+    .token-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .token {
+      min-height: 76px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #fbfcfc;
+    }
+
+    .token.is-custom {
+      border-color: var(--primary);
+      background: var(--soft);
+    }
+
+    .token strong,
+    .map-cell strong,
+    .quiz-card strong,
+    .score-card strong {
+      display: block;
+      line-height: 1.35;
+    }
+
+    .token span,
+    .map-cell span,
+    .quiz-card span,
+    .score-card span {
+      display: block;
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .badge {
+      display: inline-block;
+      margin-top: 8px;
+      padding: 2px 7px;
+      border-radius: 999px;
+      color: var(--primary-deep);
+      background: #dff0eb;
+      font-size: 11px;
+      font-weight: 900;
+    }
+
+    .story {
+      padding: 12px;
+      border: 1px solid #eadf9e;
+      border-radius: var(--radius);
+      background: var(--note);
+      line-height: 1.65;
+    }
+
+    .editor-grid {
+      display: grid;
+      grid-template-columns: 82px minmax(0, 1fr);
+      gap: 8px;
+    }
+
+    .map-table {
+      display: grid;
+      gap: 14px;
+      max-height: 580px;
+      overflow: auto;
+      padding-right: 4px;
+    }
+
+    .map-group {
+      display: grid;
+      gap: 8px;
+    }
+
+    .map-group-title {
+      margin: 0;
+      color: var(--primary-deep);
+      font-size: 13px;
+      line-height: 1.35;
+      font-weight: 900;
+    }
+
+    .map-group-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .map-inline-editor {
+      display: grid;
+      gap: 10px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #fbfcfc;
+    }
+
+    .map-inline-editor.is-updated {
+      animation: editorPulse 0.45s ease;
+      border-color: rgba(22, 124, 104, 0.45);
+      box-shadow: 0 0 0 3px rgba(22, 124, 104, 0.1);
+    }
+
+    @keyframes editorPulse {
+      0% { transform: scale(1); }
+      45% { transform: scale(1.012); }
+      100% { transform: scale(1); }
+    }
+
+    .map-cell {
+      min-height: 66px;
+      padding: 9px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #fff;
+      text-align: left;
+    }
+
+    .map-cell:hover {
+      border-color: var(--primary);
+    }
+
+    .map-cell.is-selected {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(22, 124, 104, 0.15);
+    }
+
+    .map-cell.is-custom {
+      background: var(--soft);
+    }
+
+    .quiz-card {
+      display: grid;
+      gap: 12px;
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #fbfcfc;
+    }
+
+    .quiz-prompt {
+      display: grid;
+      place-items: center;
+      min-height: 96px;
+      border-radius: var(--radius);
+      background: var(--soft);
+      color: var(--primary-deep);
+      font-size: 34px;
+      font-weight: 900;
+    }
+
+    .quiz-feedback {
+      min-height: 24px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .quiz-feedback.is-ok {
+      color: var(--ok);
+      font-weight: 800;
+    }
+
+    .quiz-feedback.is-ok::before {
+      content: "✓";
+      display: inline-grid;
+      place-items: center;
+      width: 20px;
+      height: 20px;
+      margin-right: 6px;
+      border-radius: 999px;
+      color: #fff;
+      background: var(--ok);
+      font-size: 12px;
+      vertical-align: middle;
+    }
+
+    .quiz-feedback.is-wrong {
+      color: var(--danger);
+      font-weight: 800;
+    }
+
+    .quiz-card.is-celebrating {
+      animation: quizSuccessShake 0.42s ease;
+      border-color: rgba(36, 137, 87, 0.55);
+      box-shadow: 0 0 0 3px rgba(36, 137, 87, 0.12);
+    }
+
+    .quiz-prompt.is-correct {
+      animation: quizSuccessPop 0.52s ease;
+      background: #e3f6ec;
+      color: #17683e;
+    }
+
+    @keyframes quizSuccessShake {
+      0%, 100% { transform: translateX(0); }
+      18% { transform: translateX(-4px) rotate(-0.4deg); }
+      36% { transform: translateX(4px) rotate(0.4deg); }
+      54% { transform: translateX(-3px) rotate(-0.25deg); }
+      72% { transform: translateX(3px) rotate(0.25deg); }
+    }
+
+    @keyframes quizSuccessPop {
+      0% { transform: scale(1); }
+      45% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+
+    .test-stage {
+      display: grid;
+      gap: 12px;
+    }
+
+    #testTokens {
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+    }
+
+    #testTokens .token {
+      min-height: 72px;
+      padding: 10px 8px;
+    }
+
+    #testTokens .token strong {
+      text-align: center;
+      font-size: 18px;
+    }
+
+    #testTokens .token span {
+      font-size: 11px;
+      text-align: center;
+    }
+
+    .test-number {
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #fbfcfc;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 22px;
+      line-height: 1.65;
+      word-break: break-all;
+    }
+
+    .timer {
+      display: grid;
+      place-items: center;
+      min-height: 92px;
+      border-radius: var(--radius);
+      color: #fff;
+      background: var(--primary);
+      font-size: 40px;
+      font-weight: 900;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .timer.is-low {
+      background: var(--accent);
+    }
+
+    .score-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .score-card {
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #fff;
+    }
+
+    .compare {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .compare-box {
+      min-height: 96px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #fff;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      line-height: 1.55;
+      word-break: break-all;
+    }
+
+    .empty {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 1180px) {
+      .layout {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .map-table {
+        max-height: 360px;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .topbar {
+        display: grid;
+        gap: 10px;
+        padding: 12px 14px;
+      }
+
+      .top-actions {
+        justify-content: flex-start;
+      }
+
+      .layout {
+        padding: 10px;
+      }
+
+      .panel-header {
+        padding: 12px;
+      }
+
+      .panel-body {
+        gap: 12px;
+        padding: 12px;
+      }
+
+      .editor-grid,
+      .compare,
+      .score-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .map-table {
+        gap: 12px;
+      }
+
+      .map-group {
+        gap: 6px;
+      }
+
+      .map-group-grid,
+      .token-grid,
+      #testTokens {
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 6px;
+      }
+
+      .map-cell,
+      .token,
+      #testTokens .token {
+        min-height: 64px;
+        padding: 7px 5px;
+        overflow: hidden;
+      }
+
+      .map-cell strong,
+      .token strong,
+      #testTokens .token strong {
+        text-align: center;
+        font-size: 15px;
+      }
+
+      .map-cell span,
+      .token span,
+      #testTokens .token span {
+        display: -webkit-box;
+        margin-top: 4px;
+        overflow: hidden;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+        color: var(--muted);
+        text-align: center;
+        font-size: 10px;
+        line-height: 1.25;
+      }
+
+      .badge {
+        margin-top: 4px;
+        padding: 1px 4px;
+        font-size: 9px;
+      }
+
+      .timer {
+        font-size: 34px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .quiz-card.is-celebrating,
+      .quiz-prompt.is-correct,
+      .map-inline-editor.is-updated {
+        animation: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark">數</div>
+        <div>
+          <h1>數字轉換練習器</h1>
+          <p>00-99 圖像、自訂對照、限時記憶測試</p>
+        </div>
+      </div>
+      <div class="top-actions">
+        <a class="btn" data-page-link="converter" href="number-converter.html">轉換器</a>
+        <a class="btn" data-page-link="mapping" href="mapping.html">對照表</a>
+        <a class="btn" data-page-link="quiz" href="quiz.html">自我測驗</a>
+        <a class="btn btn-primary" data-page-link="test" href="test.html">限時測試</a>
+      </div>
+    </header>
+
+    <main class="layout">
+      <section class="stack">
+        <section class="panel" id="converterPanel">
+          <div class="panel-header">
+            <div class="panel-title">
+              <h2>轉換器</h2>
+              <span>輸入數字後自動分組</span>
+            </div>
+            <button class="btn btn-primary" id="convertBtn" type="button">轉換</button>
+          </div>
+          <div class="panel-body">
+            <textarea class="textarea" id="numberInput" aria-label="數字輸入">010203</textarea>
+            <div class="btn-row">
+              <button class="btn" id="cleanInputBtn" type="button">只留數字</button>
+              <button class="btn" id="clearInputBtn" type="button">清空</button>
+            </div>
+            <div class="converter-output">
+              <div class="token-grid" id="convertTokens"></div>
+              <div class="story" id="convertStory"></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel" id="customPanel">
+          <div class="panel-header">
+            <div class="panel-title">
+              <h2>自訂對照</h2>
+              <span>只支援 00-99</span>
+            </div>
+          </div>
+          <div class="panel-body">
+            <div class="editor-grid">
+              <input class="input" id="editPair" type="text" value="19" maxlength="2" inputmode="numeric" aria-label="自訂數字" />
+              <input class="input" id="editImage" type="text" value="救護車 ambulance" aria-label="自訂圖像" />
+            </div>
+            <div class="btn-row">
+              <button class="btn btn-primary" id="saveMapBtn" type="button">儲存自訂</button>
+              <button class="btn" id="resetOneBtn" type="button">重設單筆</button>
+              <button class="btn btn-danger" id="resetAllBtn" type="button">全部還原</button>
+            </div>
+            <p class="hint" id="customState">目前使用系統預設。</p>
+          </div>
+        </section>
+      </section>
+
+      <section class="stack">
+        <section class="panel" id="testPanel">
+          <div class="panel-header">
+            <div class="panel-title">
+              <h2>限時測試</h2>
+              <span>預設 50 個亂數 / 10 分鐘</span>
+            </div>
+            <button class="btn btn-primary" id="startTestBtn" type="button">開始倒數</button>
+          </div>
+          <div class="panel-body test-stage">
+            <div>
+              <p class="hint">數字量</p>
+              <div class="segmented" id="lengthOptions" aria-label="數字量選項"></div>
+            </div>
+            <div>
+              <p class="hint">倒數時間</p>
+              <div class="segmented" id="timeOptions" aria-label="時間選項"></div>
+            </div>
+            <div class="btn-row">
+              <button class="btn" id="generateRandomBtn" type="button">產生亂數</button>
+              <button class="btn" id="hideNumberBtn" type="button">隱藏數字</button>
+              <button class="btn" id="stopTimerBtn" type="button">停止</button>
+            </div>
+            <div class="timer" id="timer">10:00</div>
+            <textarea class="textarea" id="testNumberInput" aria-label="測試數字"></textarea>
+            <div class="token-grid" id="testTokens"></div>
+            <textarea class="textarea" id="recallInput" placeholder="回想後輸入數字" aria-label="回想輸入"></textarea>
+            <div class="btn-row">
+              <button class="btn btn-primary" id="submitRecallBtn" type="button">提交答案</button>
+              <button class="btn" id="resetTestBtn" type="button">重新測試</button>
+            </div>
+            <div class="score-grid" id="scoreGrid"></div>
+            <div class="compare" id="compareResult"></div>
+          </div>
+        </section>
+
+        <section class="panel" id="quizPanel">
+          <div class="panel-header">
+            <div class="panel-title">
+              <h2>自我測驗</h2>
+              <span>單題快問快答</span>
+            </div>
+            <button class="btn" id="nextQuizBtn" type="button">下一題</button>
+          </div>
+          <div class="panel-body">
+            <div class="btn-row">
+              <button class="btn btn-primary" id="quizPairMode" type="button">看數字猜圖像</button>
+              <button class="btn" id="quizImageMode" type="button">看圖像猜數字</button>
+            </div>
+            <div class="quiz-card">
+              <span class="hint" id="quizModeLabel">目前題型：看數字猜圖像</span>
+              <div class="quiz-prompt" id="quizPrompt">19</div>
+              <input class="input" id="quizAnswer" type="text" aria-label="測驗答案" />
+              <div class="btn-row">
+                <button class="btn btn-primary" id="checkQuizBtn" type="button">檢查</button>
+                <button class="btn" id="showQuizAnswerBtn" type="button">顯示答案</button>
+              </div>
+              <div class="quiz-feedback" id="quizFeedback"></div>
+            </div>
+          </div>
+        </section>
+      </section>
+
+      <section class="panel" id="mappingPanel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <h2>00-99 對照表</h2>
+            <span>點選任一格即可編輯</span>
+          </div>
+          <input class="input" id="searchMap" type="text" placeholder="搜尋" aria-label="搜尋對照表" style="max-width: 132px;" />
+        </div>
+        <div class="panel-body">
+          <div class="map-inline-editor" id="mapInlineEditor">
+            <p class="hint">點選下方任一格後，可在這裡直接修改。</p>
+            <div class="editor-grid">
+              <input class="input" id="mapEditPair" type="text" value="19" maxlength="2" inputmode="numeric" aria-label="對照表編輯數字" />
+              <input class="input" id="mapEditImage" type="text" value="救護車 ambulance" aria-label="對照表編輯圖像" />
+            </div>
+            <div class="btn-row">
+              <button class="btn btn-primary" id="mapSaveBtn" type="button">儲存這格</button>
+              <button class="btn" id="mapResetOneBtn" type="button">重設這格</button>
+              <button class="btn btn-danger" id="mapResetAllBtn" type="button">全部還原</button>
+            </div>
+            <p class="hint" id="mapEditorState">目前使用系統預設。</p>
+          </div>
+          <div class="map-table" id="mapTable"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const STORAGE_KEY = "memoryking.numberTool.customMappings";
+    const defaultMap = {
+      "00": "錄音帶 VHS",
+      "01": "鉛筆 pencil（或靈異）",
+      "02": "鴨子 duck（或耳朵）",
+      "03": "麥當勞 M",
+      "04": "帆船 ⛵",
+      "05": "手套 rubber glove",
+      "06": "煙斗 🚬（或櫻桃、鬥牛）",
+      "07": "拐杖 cane（或妻）",
+      "08": "眼鏡 👓（或爸）",
+      "09": "米酒 🍻（或舅、馬英九）",
+      "10": "十字架 ➕",
+      "11": "筷子",
+      "12": "時鐘",
+      "13": "雨傘 ☔",
+      "14": "醫師",
+      "15": "鸚鵡 parrot",
+      "16": "陽柳 baobab tree（或石榴、野柳女王頭）",
+      "17": "儀器 🔭",
+      "18": "骰子 dice（或十八羅漢、尾巴）",
+      "19": "救護車 ambulance",
+      "20": "惡靈 😈",
+      "21": "鱷魚 🐊",
+      "22": "鵝鵝 goose",
+      "23": "和尚",
+      "24": "餓死鬼 👻",
+      "25": "二胡 mandoline",
+      "26": "河流 river",
+      "27": "耳機 🎧",
+      "28": "惡霸",
+      "29": "惡狗 doberman",
+      "30": "三菱汽車",
+      "31": "鯊魚 shark",
+      "32": "嫦娥",
+      "33": "三商巧福牛肉麵",
+      "34": "沙士汽水",
+      "35": "珊瑚 coral",
+      "36": "沙漏 hourglass（或燒肉）",
+      "37": "山雞",
+      "38": "沙發",
+      "39": "三角褲",
+      "40": "士林大香腸",
+      "41": "死魚",
+      "42": "刺客",
+      "43": "富士山",
+      "44": "斯斯 medicine",
+      "45": "師傅",
+      "46": "飼料",
+      "47": "司機",
+      "48": "書包 🎒（或施巴）",
+      "49": "死囚",
+      "50": "葉問",
+      "51": "烏雲 ⛈（或烏魚子、雨衣）",
+      "52": "撲克牌 ♣♦♥♠",
+      "53": "午餐",
+      "54": "武士",
+      "55": "火車",
+      "56": "頭髮",
+      "57": "武器",
+      "58": "烏龜",
+      "59": "五角大廈",
+      "60": "榴槤",
+      "61": "輪椅 ♿",
+      "62": "幼兒 baby（或牛耳、牛兒）",
+      "63": "硫酸",
+      "64": "螺絲",
+      "65": "尿壺（或蓮霧）",
+      "66": "溜溜球",
+      "67": "油漆",
+      "68": "喇叭 📣（或劉邦）",
+      "69": "太極（或琉球）",
+      "70": "冰淇淋",
+      "71": "奇異果",
+      "72": "企鵝",
+      "73": "旗杆",
+      "74": "起司 cheese",
+      "75": "祈福護身符",
+      "76": "氣流 tornado",
+      "77": "巧克力",
+      "78": "青蛙（或麻糬）",
+      "79": "氣球",
+      "80": "巴黎鐵塔",
+      "81": "護士（或鮑魚）",
+      "82": "百合",
+      "83": "比薩 pizza（或花生、疤傷）",
+      "84": "巴士 bus",
+      "85": "寶物",
+      "86": "芭樂",
+      "87": "白痴",
+      "88": "趴趴熊",
+      "89": "芭蕉扇",
+      "90": "手槍",
+      "91": "救生衣（或 Curry 球衣）",
+      "92": "汽油 ⛽（或球兒）",
+      "93": "軍人節",
+      "94": "果汁 juice",
+      "95": "加油站",
+      "96": "蝴蝶",
+      "97": "手機",
+      "98": "酒吧",
+      "99": "領結 👔"
+    };
+
+    const state = {
+      customMap: loadCustomMap(),
+      selectedPair: "19",
+      quizMode: "pair",
+      quizPair: "19",
+      testLength: 50,
+      testMinutes: 10,
+      testNumber: "",
+      timerId: null,
+      remainingSeconds: 600,
+      hidden: false
+    };
+
+    const $ = (selector) => document.querySelector(selector);
+    const numberInput = $("#numberInput");
+    const convertTokens = $("#convertTokens");
+    const convertStory = $("#convertStory");
+    const editPair = $("#editPair");
+    const editImage = $("#editImage");
+    const customState = $("#customState");
+    const mapTable = $("#mapTable");
+    const mapInlineEditor = $("#mapInlineEditor");
+    const mapEditPair = $("#mapEditPair");
+    const mapEditImage = $("#mapEditImage");
+    const mapEditorState = $("#mapEditorState");
+    const searchMap = $("#searchMap");
+    const quizPrompt = $("#quizPrompt");
+    const quizAnswer = $("#quizAnswer");
+    const quizFeedback = $("#quizFeedback");
+    const quizModeLabel = $("#quizModeLabel");
+    const timer = $("#timer");
+    const testNumberInput = $("#testNumberInput");
+    const testTokens = $("#testTokens");
+    const recallInput = $("#recallInput");
+    const scoreGrid = $("#scoreGrid");
+    const compareResult = $("#compareResult");
+    const layout = $(".layout");
+
+    const pages = {
+      converter: {
+        title: "轉換器",
+        subtitle: "輸入數字後自動分組",
+        panels: ["converterPanel"]
+      },
+      mapping: {
+        title: "對照表",
+        subtitle: "00-99 圖像與自訂編輯",
+        panels: ["mappingPanel"]
+      },
+      quiz: {
+        title: "自我測驗",
+        subtitle: "單題快問快答",
+        panels: ["quizPanel"]
+      },
+      test: {
+        title: "限時測試",
+        subtitle: "亂數記憶與倒數測驗",
+        panels: ["testPanel"]
+      }
+    };
+
+    function getCurrentPage() {
+      const fileName = location.pathname.split("/").pop() || "index.html";
+      if (fileName === "mapping.html") return "mapping";
+      if (fileName === "quiz.html") return "quiz";
+      if (fileName === "test.html") return "test";
+      return "converter";
+    }
+
+    function setupPageLayout() {
+      const currentPage = getCurrentPage();
+      const config = pages[currentPage] || pages.converter;
+      const visiblePanels = new Set(config.panels);
+      document.title = `${config.title} - 數字轉換練習器`;
+      $(".brand p").textContent = config.subtitle;
+      layout.classList.add("is-single-page");
+
+      ["converterPanel", "customPanel", "testPanel", "quizPanel", "mappingPanel"].forEach((panelId) => {
+        const panel = $(`#${panelId}`);
+        if (panel) panel.classList.toggle("is-page-hidden", !visiblePanels.has(panelId));
+      });
+
+      document.querySelectorAll(".stack").forEach((stack) => {
+        const hasVisiblePanel = Array.from(stack.querySelectorAll(".panel")).some((panel) => !panel.classList.contains("is-page-hidden"));
+        stack.classList.toggle("is-page-hidden", !hasVisiblePanel);
+      });
+
+      document.querySelectorAll("[data-page-link]").forEach((link) => {
+        const isActive = link.dataset.pageLink === currentPage;
+        link.classList.toggle("btn-primary", isActive);
+        link.setAttribute("aria-current", isActive ? "page" : "false");
+      });
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function loadCustomMap() {
+      try {
+        const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+        return parsed && typeof parsed === "object" ? parsed : {};
+      } catch {
+        return {};
+      }
+    }
+
+    function saveCustomMap() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state.customMap));
+    }
+
+    function normalizePair(value) {
+      const digits = String(value || "").replace(/\D/g, "").slice(0, 2);
+      return (digits || "00").padStart(2, "0");
+    }
+
+    function cleanPairDraft(value) {
+      return String(value || "").replace(/\D/g, "").slice(0, 2);
+    }
+
+    function syncDraftPairInput(input) {
+      const cleanValue = cleanPairDraft(input.value);
+      if (input.value !== cleanValue) input.value = cleanValue;
+    }
+
+    function commitPairInput(input) {
+      const pair = normalizePair(input.value);
+      setSelectedPair(pair);
+      return pair;
+    }
+
+    function cleanDigits(value, limit = 200) {
+      return String(value || "").replace(/\D/g, "").slice(0, limit);
+    }
+
+    function pairsFromDigits(value) {
+      const digits = cleanDigits(value);
+      const pairs = [];
+      for (let i = 0; i < digits.length; i += 2) {
+        const part = digits.slice(i, i + 2);
+        pairs.push(part.length === 1 ? part.padStart(2, "0") : part);
+      }
+      return pairs;
+    }
+
+    function formatPairsInRows(value, groupsPerRow = 5) {
+      const pairs = pairsFromDigits(value);
+      const rows = [];
+      for (let index = 0; index < pairs.length; index += groupsPerRow) {
+        rows.push(pairs.slice(index, index + groupsPerRow).join(" "));
+      }
+      return rows.join("\n");
+    }
+
+    function getImage(pair) {
+      const key = normalizePair(pair);
+      return state.customMap[key] || defaultMap[key];
+    }
+
+    function isCustom(pair) {
+      return Object.prototype.hasOwnProperty.call(state.customMap, normalizePair(pair));
+    }
+
+    function renderConversion(targetInput = numberInput, tokenTarget = convertTokens, storyTarget = convertStory) {
+      const pairs = pairsFromDigits(targetInput.value);
+      if (!pairs.length) {
+        tokenTarget.innerHTML = `<p class="empty">尚未輸入數字。</p>`;
+        storyTarget.textContent = "等待輸入";
+        return;
+      }
+      tokenTarget.innerHTML = pairs.map((pair) => `
+        <article class="token ${isCustom(pair) ? "is-custom" : ""}">
+          <strong>${pair}</strong>
+          <span>${escapeHtml(getImage(pair))}</span>
+          ${isCustom(pair) ? `<em class="badge">自訂</em>` : ""}
+        </article>
+      `).join("");
+      storyTarget.textContent = pairs.map(getImage).join(" → ");
+    }
+
+    function renderMapTable() {
+      const query = searchMap.value.trim().toLowerCase();
+      const pairs = Array.from({ length: 100 }, (_, index) => String(index).padStart(2, "0"));
+      const filteredPairs = pairs.filter((pair) => !query || pair.includes(query) || getImage(pair).toLowerCase().includes(query));
+      const groups = Array.from({ length: 10 }, (_, groupIndex) => {
+        const start = groupIndex * 10;
+        const end = start + 9;
+        const groupPairs = filteredPairs.filter((pair) => {
+          const value = Number(pair);
+          return value >= start && value <= end;
+        });
+
+        if (!groupPairs.length) return "";
+
+        return `
+          <section class="map-group" aria-label="${String(start).padStart(2, "0")}-${String(end).padStart(2, "0")}">
+            <h3 class="map-group-title">${String(start).padStart(2, "0")}-${String(end).padStart(2, "0")}</h3>
+            <div class="map-group-grid">
+              ${groupPairs.map((pair) => `
+                <button class="map-cell ${pair === state.selectedPair ? "is-selected" : ""} ${isCustom(pair) ? "is-custom" : ""}" type="button" data-pair="${pair}">
+                  <strong>${pair}</strong>
+                  <span>${escapeHtml(getImage(pair))}</span>
+                  ${isCustom(pair) ? `<em class="badge">自訂</em>` : ""}
+                </button>
+              `).join("")}
+            </div>
+          </section>
+        `;
+      }).join("");
+
+      mapTable.innerHTML = groups || `<p class="empty">找不到符合的對照。</p>`;
+    }
+
+    function flashMapEditor() {
+      mapInlineEditor.classList.remove("is-updated");
+      void mapInlineEditor.offsetWidth;
+      mapInlineEditor.classList.add("is-updated");
+      window.setTimeout(() => mapInlineEditor.classList.remove("is-updated"), 520);
+    }
+
+    function setSelectedPair(pair) {
+      state.selectedPair = normalizePair(pair);
+      editPair.value = state.selectedPair;
+      editImage.value = getImage(state.selectedPair);
+      mapEditPair.value = state.selectedPair;
+      mapEditImage.value = getImage(state.selectedPair);
+      const stateText = isCustom(state.selectedPair) ? "目前使用個人自訂。" : "目前使用系統預設。";
+      customState.textContent = stateText;
+      mapEditorState.textContent = `${state.selectedPair}：${stateText}`;
+      renderMapTable();
+    }
+
+    function saveMapping(pairValue = editPair.value, imageValue = editImage.value) {
+      const pair = normalizePair(pairValue);
+      const image = imageValue.trim();
+      if (!image) {
+        customState.textContent = "請輸入記憶圖像。";
+        mapEditorState.textContent = "請輸入記憶圖像。";
+        return;
+      }
+      state.customMap = { ...state.customMap, [pair]: image };
+      saveCustomMap();
+      setSelectedPair(pair);
+      renderConversion();
+      renderTestTokens();
+      customState.textContent = `已儲存 ${pair}。`;
+      mapEditorState.textContent = `已儲存 ${pair}。`;
+      flashMapEditor();
+    }
+
+    function resetOneMapping(pairValue = editPair.value) {
+      const pair = normalizePair(pairValue);
+      const next = { ...state.customMap };
+      delete next[pair];
+      state.customMap = next;
+      saveCustomMap();
+      setSelectedPair(pair);
+      renderConversion();
+      renderTestTokens();
+      customState.textContent = `已重設 ${pair}。`;
+      mapEditorState.textContent = `已重設 ${pair}。`;
+      flashMapEditor();
+    }
+
+    function resetAllMappings() {
+      state.customMap = {};
+      saveCustomMap();
+      setSelectedPair(state.selectedPair);
+      renderConversion();
+      renderTestTokens();
+      customState.textContent = "已全部還原。";
+      mapEditorState.textContent = "已全部還原。";
+      flashMapEditor();
+    }
+
+    function randomDigits(length) {
+      const values = new Uint32Array(length);
+      crypto.getRandomValues(values);
+      return Array.from(values, (value) => String(value % 10)).join("");
+    }
+
+    function renderOptions(container, values, active, suffix) {
+      container.innerHTML = values.map((value) => `
+        <button type="button" class="${value === active ? "is-active" : ""}" data-value="${value}">${value}${suffix}</button>
+      `).join("");
+    }
+
+    function renderLengthOptions() {
+      renderOptions($("#lengthOptions"), [50, 40, 30, 20, 10], state.testLength, "個");
+    }
+
+    function renderTimeOptions() {
+      renderOptions($("#timeOptions"), [10, 8, 6, 4, 2], state.testMinutes, "分");
+    }
+
+    function generateTestNumber() {
+      state.testNumber = randomDigits(state.testLength);
+      testNumberInput.value = state.testNumber;
+      state.hidden = false;
+      renderTestArea();
+      compareResult.innerHTML = "";
+      scoreGrid.innerHTML = "";
+      recallInput.value = "";
+    }
+
+    function renderTestArea() {
+      renderTestVisibility();
+      renderTestTokens();
+    }
+
+    function renderTestVisibility() {
+      if (state.hidden) {
+        testNumberInput.value = "";
+        testNumberInput.placeholder = "數字已隱藏，請在下方輸入回想答案。";
+        testNumberInput.readOnly = true;
+        testNumberInput.classList.add("is-concealed");
+        $("#hideNumberBtn").textContent = "顯示數字";
+        return;
+      }
+
+      testNumberInput.readOnly = false;
+      testNumberInput.classList.remove("is-concealed");
+      testNumberInput.placeholder = "可自行輸入或產生亂數";
+      testNumberInput.value = formatPairsInRows(state.testNumber);
+      $("#hideNumberBtn").textContent = "隱藏數字";
+    }
+
+    function renderTestTokens() {
+      if (state.hidden) {
+        testTokens.innerHTML = `<p class="empty">數字已隱藏，請在下方輸入回想答案。</p>`;
+        return;
+      }
+
+      const pairs = pairsFromDigits(state.testNumber);
+      if (!pairs.length) {
+        testTokens.innerHTML = `<p class="empty">尚未輸入數字。</p>`;
+        return;
+      }
+
+      testTokens.innerHTML = pairs.map((pair) => `
+        <article class="token ${isCustom(pair) ? "is-custom" : ""}">
+          <strong>${pair}</strong>
+          <span>${escapeHtml(getImage(pair))}</span>
+          ${isCustom(pair) ? `<em class="badge">自訂</em>` : ""}
+        </article>
+      `).join("");
+    }
+
+    function setTimer(seconds) {
+      state.remainingSeconds = seconds;
+      const minutes = Math.floor(seconds / 60);
+      const secs = seconds % 60;
+      timer.textContent = `${String(minutes).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+      timer.classList.toggle("is-low", seconds <= 60);
+    }
+
+    function stopTimer() {
+      if (state.timerId) clearInterval(state.timerId);
+      state.timerId = null;
+    }
+
+    function startTimer() {
+      stopTimer();
+      state.hidden = false;
+      renderTestArea();
+      setTimer(state.testMinutes * 60);
+      state.timerId = setInterval(() => {
+        const next = state.remainingSeconds - 1;
+        setTimer(Math.max(0, next));
+        if (next <= 0) {
+          stopTimer();
+          state.hidden = true;
+          renderTestArea();
+        }
+      }, 1000);
+    }
+
+    function submitRecall() {
+      const target = cleanDigits(state.testNumber, state.testLength);
+      const answer = cleanDigits(recallInput.value, state.testLength);
+      const max = Math.max(target.length, answer.length);
+      let correct = 0;
+      for (let i = 0; i < max; i += 1) {
+        if (target[i] && target[i] === answer[i]) correct += 1;
+      }
+      const percent = max ? Math.round((correct / max) * 100) : 0;
+      scoreGrid.innerHTML = `
+        <article class="score-card"><strong>${correct}/${max}</strong><span>逐位正確</span></article>
+        <article class="score-card"><strong>${percent}%</strong><span>正確率</span></article>
+        <article class="score-card"><strong>${target === answer ? "完成" : "未完成"}</strong><span>完全一致</span></article>
+      `;
+      compareResult.innerHTML = `
+        <div class="compare-box"><strong>原數字</strong><br>${escapeHtml(target)}</div>
+        <div class="compare-box"><strong>你的答案</strong><br>${escapeHtml(answer || "尚未輸入")}</div>
+      `;
+    }
+
+    function newQuiz() {
+      state.quizPair = String(Math.floor(Math.random() * 100)).padStart(2, "0");
+      quizAnswer.value = "";
+      quizFeedback.textContent = "";
+      quizFeedback.className = "quiz-feedback";
+      quizPrompt.classList.remove("is-correct");
+      quizPrompt.closest(".quiz-card")?.classList.remove("is-celebrating");
+      quizModeLabel.textContent = state.quizMode === "pair" ? "目前題型：看數字猜圖像" : "目前題型：看圖像猜數字";
+      quizPrompt.textContent = state.quizMode === "pair" ? state.quizPair : getImage(state.quizPair);
+    }
+
+    function triggerQuizSuccessFeedback() {
+      const quizCard = quizPrompt.closest(".quiz-card");
+      quizCard?.classList.remove("is-celebrating");
+      quizPrompt.classList.remove("is-correct");
+      void quizPrompt.offsetWidth;
+      quizCard?.classList.add("is-celebrating");
+      quizPrompt.classList.add("is-correct");
+      if ("vibrate" in navigator) navigator.vibrate([40, 30, 40]);
+      window.setTimeout(() => {
+        quizCard?.classList.remove("is-celebrating");
+        quizPrompt.classList.remove("is-correct");
+      }, 700);
+    }
+
+    function checkQuiz() {
+      const answer = quizAnswer.value.trim();
+      const expected = state.quizMode === "pair" ? getImage(state.quizPair) : state.quizPair;
+      const ok = answer && (state.quizMode === "pair"
+        ? expected.toLowerCase().includes(answer.toLowerCase()) || answer.toLowerCase().includes(expected.toLowerCase())
+        : normalizePair(answer) === expected);
+      quizFeedback.className = `quiz-feedback ${ok ? "is-ok" : "is-wrong"}`;
+      quizFeedback.textContent = ok ? "答對了，太棒了！" : `答案是 ${expected}`;
+      if (ok) triggerQuizSuccessFeedback();
+    }
+
+    function showQuizAnswer() {
+      quizFeedback.className = "quiz-feedback";
+      quizFeedback.textContent = state.quizMode === "pair" ? getImage(state.quizPair) : state.quizPair;
+    }
+
+    setupPageLayout();
+
+    $("#convertBtn").addEventListener("click", () => renderConversion());
+    numberInput.addEventListener("input", () => renderConversion());
+    $("#cleanInputBtn").addEventListener("click", () => {
+      numberInput.value = cleanDigits(numberInput.value);
+      renderConversion();
+    });
+    $("#clearInputBtn").addEventListener("click", () => {
+      numberInput.value = "";
+      renderConversion();
+    });
+
+    editPair.addEventListener("input", () => syncDraftPairInput(editPair));
+    editPair.addEventListener("blur", () => commitPairInput(editPair));
+    editPair.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        commitPairInput(editPair);
+        editImage.focus();
+        editImage.select();
+      }
+    });
+    editImage.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") saveMapping();
+    });
+    $("#saveMapBtn").addEventListener("click", () => saveMapping(editPair.value, editImage.value));
+    $("#resetOneBtn").addEventListener("click", () => resetOneMapping(editPair.value));
+    $("#resetAllBtn").addEventListener("click", resetAllMappings);
+    mapEditPair.addEventListener("input", () => syncDraftPairInput(mapEditPair));
+    mapEditPair.addEventListener("blur", () => commitPairInput(mapEditPair));
+    mapEditPair.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        commitPairInput(mapEditPair);
+        mapEditImage.focus();
+        mapEditImage.select();
+      }
+    });
+    mapEditImage.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") saveMapping(mapEditPair.value, mapEditImage.value);
+    });
+    $("#mapSaveBtn").addEventListener("click", () => saveMapping(mapEditPair.value, mapEditImage.value));
+    $("#mapResetOneBtn").addEventListener("click", () => resetOneMapping(mapEditPair.value));
+    $("#mapResetAllBtn").addEventListener("click", resetAllMappings);
+    mapTable.addEventListener("click", (event) => {
+      const cell = event.target.closest("[data-pair]");
+      if (!cell) return;
+      setSelectedPair(cell.dataset.pair);
+      flashMapEditor();
+      mapEditImage.focus();
+      mapEditImage.select();
+    });
+    searchMap.addEventListener("input", renderMapTable);
+
+    renderLengthOptions();
+    $("#lengthOptions").addEventListener("click", (event) => {
+      const button = event.target.closest("[data-value]");
+      if (!button) return;
+      state.testLength = Number(button.dataset.value);
+      renderLengthOptions();
+      generateTestNumber();
+    });
+    renderTimeOptions();
+    $("#timeOptions").addEventListener("click", (event) => {
+      const button = event.target.closest("[data-value]");
+      if (!button) return;
+      state.testMinutes = Number(button.dataset.value);
+      renderTimeOptions();
+      setTimer(state.testMinutes * 60);
+    });
+
+    $("#generateRandomBtn").addEventListener("click", generateTestNumber);
+    $("#startTestBtn").addEventListener("click", startTimer);
+    $("#hideNumberBtn").addEventListener("click", () => {
+      state.hidden = !state.hidden;
+      renderTestArea();
+    });
+    $("#stopTimerBtn").addEventListener("click", stopTimer);
+    $("#submitRecallBtn").addEventListener("click", submitRecall);
+    $("#resetTestBtn").addEventListener("click", () => {
+      stopTimer();
+      setTimer(state.testMinutes * 60);
+      generateTestNumber();
+    });
+    testNumberInput.addEventListener("input", () => {
+      state.testNumber = cleanDigits(testNumberInput.value, state.testLength);
+      testNumberInput.value = state.testNumber;
+      state.hidden = false;
+      renderTestArea();
+    });
+
+    $("#quizPairMode").addEventListener("click", () => {
+      state.quizMode = "pair";
+      $("#quizPairMode").classList.add("btn-primary");
+      $("#quizImageMode").classList.remove("btn-primary");
+      newQuiz();
+    });
+    $("#quizImageMode").addEventListener("click", () => {
+      state.quizMode = "image";
+      $("#quizImageMode").classList.add("btn-primary");
+      $("#quizPairMode").classList.remove("btn-primary");
+      newQuiz();
+    });
+    $("#nextQuizBtn").addEventListener("click", newQuiz);
+    $("#checkQuizBtn").addEventListener("click", checkQuiz);
+    $("#showQuizAnswerBtn").addEventListener("click", showQuizAnswer);
+    quizAnswer.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") checkQuiz();
+    });
+
+    setSelectedPair("19");
+    renderConversion();
+    generateTestNumber();
+    setTimer(state.testMinutes * 60);
+    newQuiz();
+  </script>
+</body>
+</html>
